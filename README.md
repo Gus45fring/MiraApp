@@ -10,3 +10,5 @@ Current codes are
 - Map: this is the page used for maps. the file is map_screen.dart
 - Place: scalable page screen. fetches data from places_data.dart. file is place_detail_page.dart
 - QR: qr code screen. file is qr_screen.dart.
+
+Furthermore, i use the adaptive_image.dart to fetch images both from the internet and local files.
