@@ -12,3 +12,54 @@ Current codes are
 - QR: qr code screen. file is qr_screen.dart.
 
 Furthermore, i use the adaptive_image.dart to fetch images both from the internet and local files.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+i vibe coded 90% of this app, it was for a school project 🙏
