@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import '../models/place.dart';
 import '../widgets/adaptive_image.dart';
+import 'gallery_fullscreen.dart';
 
 class PlaceDetailPage extends StatefulWidget {
   final Place place;
@@ -78,45 +80,40 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            /// HERO IMAGE
+
+            /// 🔹 HERO IMAGE
             Stack(
               children: [
-                Image.network(
-                  place.imageUrl,
-                  height: 350,
+                SizedBox(
+                  height: 300,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-                Container(
-                  height: 350,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.black.withAlpha(200),
-                        Colors.transparent,
-                      ],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
+                  child: AdaptiveImage(
+                    path: place.imageUrl,
+                    fit: BoxFit.cover,
                   ),
                 ),
+                Container(
+                  height: 300,
+                  color: Colors.black.withAlpha(102),
+                ),
                 Positioned(
-                  bottom: 30,
-                  left: 24,
+                  bottom: 20,
+                  left: 20,
                   child: Text(
                     place.name,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Positioned(
-                  top: 50,
-                  left: 20,
+                  top: 40,
+                  left: 10,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon:
+                        const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -125,6 +122,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
 
             const SizedBox(height: 24),
 
+            /// 🔹 DESCRIPTION
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
@@ -132,16 +130,10 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                 style: const TextStyle(fontSize: 16, height: 1.5),
               ),
             ),
+
             const SizedBox(height: 24),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: const Text(
-                "Galleria",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-
+            /// 🔹 GALLERY
             SizedBox(
               height: 160,
               child: ListView.builder(
@@ -152,11 +144,24 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                   return Container(
                     width: 240,
                     margin: const EdgeInsets.only(right: 16),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: AdaptiveImage(
-                        path: place.galleryImages[index],
-                        fit: BoxFit.cover,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => GalleryFullscreen(
+                              images: place.galleryImages,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: AdaptiveImage(
+                          path: place.galleryImages[index],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   );
@@ -166,23 +171,22 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
 
             const SizedBox(height: 30),
 
-            const SizedBox(height: 30),
-
+            /// 🔹 ACTION BUTTONS
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
                   _actionCard(
                     icon: Icons.play_circle_fill,
-                    title: "Guarda il documentario",
+                    title: "Watch Video",
                     onTap: _openVideo,
                   ),
                   const SizedBox(height: 16),
                   _actionCard(
                     icon: Icons.headphones,
                     title: isPlaying
-                        ? "Ferma l'audio"
-                        : "Ascolta l'audio",
+                        ? "Stop Audio Guide"
+                        : "Listen to Audio Guide",
                     onTap: _playAudio,
                   ),
                 ],
@@ -193,6 +197,16 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
           ],
         ),
       ),
+
+      /// 🔹 BOTTOM LEFT BUTTON
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // no action for now
+        },
+        backgroundColor: const Color(0xFF1F3C5A),
+        child: const Icon(Icons.star),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }
