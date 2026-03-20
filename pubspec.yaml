@@ -38,6 +38,7 @@ dependencies:
   audioplayers: ^5.2.1
   webview_flutter: ^4.4.2
   flutter_launcher_icons: ^0.14.4
+  camera_desktop: ^1.0.6
 
 
 
