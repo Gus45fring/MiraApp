@@ -139,7 +139,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(left: 24),
-                itemCount: place.galleryImages.length,
+                itemCount: place.gallery.length,
                 itemBuilder: (context, index) {
                   return Container(
                     width: 240,
@@ -150,7 +150,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => GalleryFullscreen(
-                              images: place.galleryImages,
+                              items: place.gallery,
                               initialIndex: index,
                             ),
                           ),
@@ -159,7 +159,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
                         child: AdaptiveImage(
-                          path: place.galleryImages[index],
+                          path: place.gallery[index].image,
                           fit: BoxFit.cover,
                         ),
                       ),

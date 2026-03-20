@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
+
+import '../models/place.dart';
 import '../widgets/adaptive_image.dart';
 
 class GalleryFullscreen extends StatefulWidget {
-  final List<String> images;
+  final List<GalleryItem> items;
   final int initialIndex;
 
   const GalleryFullscreen({
     super.key,
-    required this.images,
+    required this.items,
     required this.initialIndex,
   });
 
@@ -19,6 +22,9 @@ class _GalleryFullscreenState extends State<GalleryFullscreen> {
   late PageController _controller;
   late int currentIndex;
 
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool isPlaying = false;
+
   @override
   void initState() {
     super.initState();
@@ -26,26 +32,45 @@ class _GalleryFullscreenState extends State<GalleryFullscreen> {
     _controller = PageController(initialPage: currentIndex);
   }
 
+  Future<void> _playAudio(String path) async {
+    if (!isPlaying) {
+      await _audioPlayer.play(AssetSource(path));
+      setState(() => isPlaying = true);
+    } else {
+      await _audioPlayer.stop();
+      setState(() => isPlaying = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentItem = widget.items[currentIndex];
+
     return Scaffold(
       backgroundColor: Colors.black,
-
       body: Stack(
         children: [
-
-          /// 🔹 IMAGE VIEWER
           PageView.builder(
             controller: _controller,
-            itemCount: widget.images.length,
+            itemCount: widget.items.length,
             onPageChanged: (index) {
-              setState(() => currentIndex = index);
+              setState(() {
+                currentIndex = index;
+                isPlaying = false;
+                _audioPlayer.stop();
+              });
             },
             itemBuilder: (context, index) {
               return InteractiveViewer(
                 child: Center(
                   child: AdaptiveImage(
-                    path: widget.images[index],
+                    path: widget.items[index].image,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -53,28 +78,28 @@ class _GalleryFullscreenState extends State<GalleryFullscreen> {
             },
           ),
 
-          /// 🔹 CLOSE BUTTON
           Positioned(
             top: 40,
             right: 20,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
           ),
 
-          /// 🔹 IMAGE COUNTER
-          Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                "${currentIndex + 1} / ${widget.images.length}",
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+          if (currentItem.hasAudio && currentItem.audio != null)
+            Positioned(
+              bottom: 30,
+              right: 20,
+              child: FloatingActionButton(
+                backgroundColor: Colors.white,
+                onPressed: () => _playAudio(currentItem.audio!),
+                child: Icon(
+                  isPlaying ? Icons.stop : Icons.play_arrow,
+                  color: Colors.black,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
