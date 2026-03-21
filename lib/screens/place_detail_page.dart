@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -158,7 +160,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                     margin: const EdgeInsets.only(right: 16),
                     child: GestureDetector(
                       onTap: () async {
-                        await _stopAudio(); // 🔥 stop audio
+                        await _stopAudio();
 
                         Navigator.push(
                           context,

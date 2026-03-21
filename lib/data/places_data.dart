@@ -11,12 +11,12 @@ final List<Place> places = [
       GalleryItem(
         image: "https://www.vita.it/wp-content/uploads/2023/07/d18b5535-cff1-4ca9-8dc9-c889f4746ee9_large.jpeg",
         hasAudio: true,
-        audio: "audio/audio1.mp3",
+        audio: "audio1.mp3",
       ),
       GalleryItem(
         image: "assets/images/PalazzoInterno.jpeg",
         hasAudio: true,
-        audio: "audio/audio2.mp3",
+        audio: "audio2.mp3",
       ),
       GalleryItem(image: "https://fdcmessina.org/wp-content/uploads/2024/10/IMG_7279-1200x600.jpg"),
       GalleryItem(image: "assets/images/PalazzoEsterno_ant.jpeg"),
@@ -24,7 +24,7 @@ final List<Place> places = [
 
     ],
     youtubeUrl: "https://youtu.be/lICKD7hjg4o",
-    audioAsset: "audio/palazzo.mp3",
+    audioAsset: "palazzo.mp3",
   ),
   const Place(
     id: "chiesa",
@@ -36,12 +36,12 @@ final List<Place> places = [
       GalleryItem(
         image: "https://annuariocattolico.it/pf/AC/media/enti/BW79222.jpg?",
         hasAudio: true,
-        audio: "assets/audio/ChiesaEsterno.mp3",
+        audio: "ChiesaEsterno.mp3",
       ),
       GalleryItem(
         image: "assets/images/ChiesaInterno.jpeg",
         hasAudio: true,
-        audio: "assets/audio/ChiesaInterno.mp3",
+        audio: "ChiesaInterno.mp3",
       ),
       GalleryItem(image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Mirabella_Chiesa_S_Maria_Grazie.JPG"),
       GalleryItem(image: "assets/images/ChiesaEsterno_ant.jpeg"),      
@@ -50,6 +50,6 @@ final List<Place> places = [
     ],
 
     youtubeUrl: "https://youtu.be/O6rr-xiTuH0",
-    audioAsset: "audio/chiesa.mp3",
+    audioAsset: "chiesa.mp3",
   ),
 ];

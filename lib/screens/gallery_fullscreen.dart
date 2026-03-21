@@ -34,7 +34,9 @@ class _GalleryFullscreenState extends State<GalleryFullscreen> {
 
   Future<void> _playAudio(String path) async {
     if (!isPlaying) {
-      await _audioPlayer.play(AssetSource(path));
+      await _audioPlayer.play(
+        AssetSource("audio/$path"),
+      );
       setState(() => isPlaying = true);
     } else {
       await _audioPlayer.stop();

@@ -1,9 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'qr_screen.dart';
 import 'map_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _appVersion = "1.0.0"; // Default fallback
+
+  @override
+  void initState() {
+    super.initState();
+    _initPackageInfo();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    setState(() {
+      _appVersion = "${info.version}+${info.buildNumber}";
+    });
+  }
 
   void _showInfoDialog(BuildContext context) {
     showDialog(
@@ -11,11 +32,11 @@ class HomeScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text("Info"),
-        content: const Text(
+        content: Text(
           "Benvenuto su MiraApp! \n\n"
-          "Scansiona QR code nei luoghi storici per scoprire la loro storia \n"
-          "Crediti:\n Pino Zaccaria, Wikimedia Commons e Filippo Nisi.\nVersione 1.1.1",
-          
+          "Scansiona QR code nei luoghi storici per scoprire la loro storia \n\n"
+          "Crediti:\n Pino Zaccaria, Wikimedia Commons e Filippo Nisi.\n\n"
+          "Versione $_appVersion",
         ),
         actions: [
           TextButton(
@@ -84,7 +105,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-
       appBar: AppBar(
         backgroundColor: Colors.white.withAlpha(60),
         elevation: 4,
@@ -101,7 +121,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -112,8 +131,14 @@ class HomeScreen extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset("assets/images/home.jpg", fit: BoxFit.cover),
-
+                  Image.asset(
+                    "assets/images/home.jpg",
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image_not_supported),
+                    ),
+                  ),
                   Container(color: Colors.black.withAlpha(20)),
                 ],
               ),
