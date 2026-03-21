@@ -14,7 +14,8 @@ class HomeScreen extends StatelessWidget {
         content: const Text(
           "Benvenuto su MiraApp! \n\n"
           "Scansiona QR code nei luoghi storici per scoprire la loro storia \n"
-          "Crediti:\n Pino Zaccaria, Wikimedia Commons e Filippo Nisi.",
+          "Crediti:\n Pino Zaccaria, Wikimedia Commons e Filippo Nisi.\nVersione 1.1.1",
+          
         ),
         actions: [
           TextButton(

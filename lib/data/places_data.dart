@@ -36,12 +36,12 @@ final List<Place> places = [
       GalleryItem(
         image: "https://annuariocattolico.it/pf/AC/media/enti/BW79222.jpg?",
         hasAudio: true,
-        audio: "audio/audio1.mp3",
+        audio: "assets/audio/ChiesaEsterno.mp3",
       ),
       GalleryItem(
         image: "assets/images/ChiesaInterno.jpeg",
         hasAudio: true,
-        audio: "audio/audio2.mp3",
+        audio: "assets/audio/ChiesaInterno.mp3",
       ),
       GalleryItem(image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Mirabella_Chiesa_S_Maria_Grazie.JPG"),
       GalleryItem(image: "assets/images/ChiesaEsterno_ant.jpeg"),      

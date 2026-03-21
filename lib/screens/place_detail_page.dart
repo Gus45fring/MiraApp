@@ -17,52 +17,64 @@ class PlaceDetailPage extends StatefulWidget {
 
 class _PlaceDetailPageState extends State<PlaceDetailPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
-  bool isPlaying = false;
 
-  Future<void> _playAudio() async {
-    if (!isPlaying) {
-      await _audioPlayer.play(AssetSource(widget.place.audioAsset));
-      setState(() => isPlaying = true);
-    } else {
-      await _audioPlayer.stop();
+  bool isPlaying = false;
+  Duration duration = Duration.zero;
+  Duration position = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _audioPlayer.onDurationChanged.listen((d) {
+      setState(() => duration = d);
+    });
+
+    _audioPlayer.onPositionChanged.listen((p) {
+      setState(() => position = p);
+    });
+
+    _audioPlayer.onPlayerComplete.listen((event) {
+      setState(() {
+        isPlaying = false;
+        position = Duration.zero;
+      });
+    });
+  }
+
+  /// ▶️ Play / Pause
+  Future<void> _togglePlayPause() async {
+    if (isPlaying) {
+      await _audioPlayer.pause();
       setState(() => isPlaying = false);
+    } else {
+      await _audioPlayer.play(
+        AssetSource("audio/${widget.place.audioAsset}"),
+      );
+      setState(() => isPlaying = true);
     }
   }
 
+  /// ⏹ Stop
+  Future<void> _stopAudio() async {
+    await _audioPlayer.stop();
+    setState(() {
+      isPlaying = false;
+      position = Duration.zero;
+    });
+  }
+
+  /// 🎥 Open video
   Future<void> _openVideo() async {
     final url = Uri.parse(widget.place.youtubeUrl);
     await launchUrl(url, mode: LaunchMode.externalApplication);
   }
 
-  Widget _actionCard({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Icon(icon, size: 28, color: const Color(0xFF1F3C5A)),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios, size: 18),
-            ],
-          ),
-        ),
-      ),
-    );
+  /// ⏱ Format time
+  String formatTime(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return "$minutes:$seconds";
   }
 
   @override
@@ -94,7 +106,7 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                 ),
                 Container(
                   height: 300,
-                  color: Colors.black.withAlpha(102),
+                  color: Colors.black.withAlpha(100),
                 ),
                 Positioned(
                   bottom: 20,
@@ -145,7 +157,9 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
                     width: 240,
                     margin: const EdgeInsets.only(right: 16),
                     child: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        await _stopAudio(); // 🔥 stop audio
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -171,25 +185,95 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
 
             const SizedBox(height: 30),
 
-            /// 🔹 ACTION BUTTONS
+            /// 🔹 VIDEO BUTTON
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  _actionCard(
-                    icon: Icons.play_circle_fill,
-                    title: "Watch Video",
-                    onTap: _openVideo,
+              child: Card(
+                child: ListTile(
+                  leading: const Icon(Icons.play_circle_fill,
+                      color: Color(0xFF1F3C5A)),
+                  title: const Text("Guarda video"),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                  onTap: _openVideo,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            /// 🔹 AUDIO PLAYER
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Guida audio",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      /// 🔹 SLIDER
+                      Slider(
+                        min: 0,
+                        max: duration.inSeconds.toDouble(),
+                        value: position.inSeconds
+                            .clamp(0, duration.inSeconds)
+                            .toDouble(),
+                        onChanged: (value) async {
+                          final newPosition =
+                              Duration(seconds: value.toInt());
+                          await _audioPlayer.seek(newPosition);
+                        },
+                      ),
+
+                      /// 🔹 TIME
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(formatTime(position)),
+                          Text(formatTime(duration)),
+                        ],
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      /// 🔹 CONTROLS
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.stop),
+                            iconSize: 32,
+                            onPressed: _stopAudio,
+                          ),
+                          const SizedBox(width: 20),
+                          IconButton(
+                            icon: Icon(
+                              isPlaying
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
+                            ),
+                            iconSize: 40,
+                            onPressed: _togglePlayPause,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  _actionCard(
-                    icon: Icons.headphones,
-                    title: isPlaying
-                        ? "Stop Audio Guide"
-                        : "Listen to Audio Guide",
-                    onTap: _playAudio,
-                  ),
-                ],
+                ),
               ),
             ),
 
