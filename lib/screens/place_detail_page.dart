@@ -197,16 +197,6 @@ class _PlaceDetailPageState extends State<PlaceDetailPage> {
           ],
         ),
       ),
-
-      /// 🔹 BOTTOM LEFT BUTTON
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // no action for now
-        },
-        backgroundColor: const Color(0xFF1F3C5A),
-        child: const Icon(Icons.star),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 }

@@ -18,11 +18,9 @@ final List<Place> places = [
         hasAudio: true,
         audio: "audio/audio2.mp3",
       ),
-      GalleryItem(
-        image: "https://fdcmessina.org/wp-content/uploads/2024/10/IMG_7279-1200x600.jpg",
-        hasAudio: false,
-        audio: "audio/audio2.mp3",
-      ),
+      GalleryItem(image: "https://fdcmessina.org/wp-content/uploads/2024/10/IMG_7279-1200x600.jpg"),
+      GalleryItem(image: "assets/images/PalazzoEsterno_ant.jpeg"),
+      GalleryItem(image: "assets/images/PalazzoInterno1.jpeg"),
 
     ],
     youtubeUrl: "https://youtu.be/lICKD7hjg4o",
@@ -45,11 +43,9 @@ final List<Place> places = [
         hasAudio: true,
         audio: "audio/audio2.mp3",
       ),
-      GalleryItem(
-        image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Mirabella_Chiesa_S_Maria_Grazie.JPG",
-        hasAudio: false,
-        audio: "audio/audio.mp3",
-      ),
+      GalleryItem(image: "https://upload.wikimedia.org/wikipedia/commons/7/74/Mirabella_Chiesa_S_Maria_Grazie.JPG"),
+      GalleryItem(image: "assets/images/ChiesaEsterno_ant.jpeg"),      
+      GalleryItem(image: "assets/images/ChiesaInterno_ant.jpeg"),
 
     ],
 

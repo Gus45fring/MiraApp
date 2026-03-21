@@ -24,7 +24,7 @@ class GalleryItem {
 
   const GalleryItem({
     required this.image,
-    this.audio,
+    this.audio = "",
     this.hasAudio = false,
   });
 }
