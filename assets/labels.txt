@@ -1,2 +1,2 @@
-0 MyBuilding
+0 chiesa
 1 background
