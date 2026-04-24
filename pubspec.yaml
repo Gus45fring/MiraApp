@@ -69,10 +69,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/audio/
-    - assets/images/
     - assets/model_unquant.tflite
     - assets/labels.txt
+    - assets/audio/
+    - assets/images/
+  
 
   # To add assets to your application, add an assets section, like this:
   # assets:

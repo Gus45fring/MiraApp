@@ -6,10 +6,19 @@ class TfliteService {
   late List<String> _labels;
 
   Future<void> init() async {
-    _interpreter = await Interpreter.fromAsset('model_unquant.tflite');
+  try {
+    // Force Flutter to verify the file exists before passing it to the Interpreter
+    final modelPath = 'assets/model_unquant.tflite';
+    _interpreter = await Interpreter.fromAsset(modelPath);
+    
     final labelData = await rootBundle.loadString('assets/labels.txt');
     _labels = labelData.split('\n');
+  } catch (e) {
+    print("FATAL ERROR: Could not find model at assets/model_unquant.tflite");
+    print("Check your pubspec.yaml file and your project folder structure.");
+    rethrow;
   }
+}
 
   // This runs the "math" on the image data
   List<double> runInference(List<List<List<int>>> input) {

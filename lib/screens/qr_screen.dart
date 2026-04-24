@@ -1,76 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:image/image.dart' as img;
 import '../services/tflite_service.dart';
-import '../services/image_utils.dart';
 
 class QRScreen extends StatefulWidget {
   const QRScreen({super.key});
+
   @override
   State<QRScreen> createState() => _QRScreenState();
 }
 
 class _QRScreenState extends State<QRScreen> {
-  late CameraController _controller;
+  CameraController? _controller;
   final TfliteService _tflite = TfliteService();
   bool _isProcessing = false;
-  String _result = "Puntare al monumento...";
+  String _status = "Caricamento...";
 
   @override
   void initState() {
     super.initState();
-    _initEverything();
+    _setup();
   }
 
-  Future<void> _initEverything() async {
-    await _tflite.init();
-    final cameras = await availableCameras();
-    _controller = CameraController(cameras[0], ResolutionPreset.medium);
-    await _controller.initialize();
-    
-    _controller.startImageStream((CameraImage image) {
-      if (!_isProcessing) {
+  Future<void> _setup() async {
+    try {
+      await _tflite.init();
+      final cameras = await availableCameras();
+      _controller = CameraController(cameras[0], ResolutionPreset.low); // LOW resolution is better for AI
+      await _controller!.initialize();
+      
+      if (mounted) setState(() => _status = "Punta al monumento");
+      
+      _controller!.startImageStream((image) async {
+        if (_isProcessing) return;
         _isProcessing = true;
-        _runInference(image);
-      }
-    });
-    setState(() {});
+        
+        // --- ADD YOUR INFERENCE CALL HERE ---
+        // await _tflite.runInference(processedImage);
+        
+        _isProcessing = false;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _status = "Errore: ${e.toString()}");
+    }
   }
 
-  void _runInference(CameraImage cameraImage) async {
-    // 1. Convert to RGB
-    img.Image rgbImage = convertCameraImageToImage(cameraImage);
-    // 2. Resize to what your model expects (usually 224x224)
-    img.Image resized = img.copyResize(rgbImage, width: 224, height: 224);
-    
-    // 3. Prepare list for TFLite (a 3D list)
-    // Note: This logic assumes a standard float32 model input
-    List<List<List<int>>> input = List.generate(224, (y) => 
-      List.generate(224, (x) => [resized.getPixel(x, y).r.toInt(), resized.getPixel(x, y).g.toInt(), resized.getPixel(x, y).b.toInt()])
-    );
-
-    // 4. Run Model
-    final results = _tflite.runInference(input);
-    
-    // 5. Update UI
-    if (results[0] > 0.8) { // Index 0 is your building
-      setState(() => _result = "Edificio Trovato!");
-    } else {
-      setState(() => _result = "Cerco...");
-    }
-    _isProcessing = false;
+  @override
+  void dispose() {
+    _controller?.stopImageStream(); // CRITICAL: Stop the stream before disposing
+    _controller?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_controller.value.isInitialized) return const Scaffold();
     return Scaffold(
-      body: Stack(
-        children: [
-          CameraPreview(_controller),
-          Center(child: Text(_result, style: TextStyle(color: Colors.white, fontSize: 24))),
-        ],
-      ),
+      backgroundColor: Colors.black,
+      body: (_controller == null || !_controller!.value.isInitialized)
+          ? Center(child: Text(_status, style: const TextStyle(color: Colors.white)))
+          : Stack(
+              children: [
+                CameraPreview(_controller!),
+                Center(child: Text(_status, style: const TextStyle(color: Colors.white, fontSize: 24))),
+              ],
+            ),
     );
   }
 }
