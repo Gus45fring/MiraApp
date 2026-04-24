@@ -40,6 +40,9 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   camera_desktop: ^1.0.6
   package_info_plus: ^8.0.0
+  tflite_flutter: ^0.12.1 # The standard for TFLite
+  image: ^4.7.2           # To resize/process the camera frame
+  camera: ^0.11.3         # For the live video feed
 
 
 
@@ -68,6 +71,8 @@ flutter:
   assets:
     - assets/audio/
     - assets/images/
+    - assets/model_unquant.tflite
+    - assets/labels.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:
