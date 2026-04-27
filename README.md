@@ -28,7 +28,16 @@ as found in place.dart, this is the way to use the places_data.dart:
 - ```String? audio```: optional audio per image. default has no audio.
 - ```bool hasAudio```: if the audio button per image should be shown. default is hidden.
 
+## Build from source (android)
+- Download [flutter](https://docs.flutter.dev/install)
+- Download zip/clone repo (```git clone https://github.com/Gus45fring/MiraApp.git```)
+- Open repo in any terminal or IDE with terminal
+- Run ```flutter build apk``` (or ```flutter run``` if you have an android device with adb enabled)
+- Copy the apk in ```build/app/outputs/flutter-apk/```
+- Run the apk
+- Have fun!
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 i vibe coded 80% of this app, it was for a school project 🙏
+
