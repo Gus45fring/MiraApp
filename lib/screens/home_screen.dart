@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Info"),
         content: Text(
           "Benvenuto su MiraApp! \n\n"
-          "Scansiona QR code nei luoghi storici per scoprire la loro storia \n\n"
+          "Scansiona i monumenti nei luoghi storici per scoprire la loro storia \n\n"
           "Crediti:\n Pino Zaccaria, Wikimedia Commons e Filippo Nisi.\n\n"
           "Versione $_appVersion",
         ),
@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: _texturedButton(
                 icon: Icons.qr_code_scanner,
-                text: "Scansiona il QR Code",
+                text: "Scansiona il monumento",
                 onTap: () {
                   Navigator.push(
                     context,
