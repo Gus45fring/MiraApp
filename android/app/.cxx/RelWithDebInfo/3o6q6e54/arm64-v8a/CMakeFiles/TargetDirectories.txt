@@ -1,0 +1,12 @@
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/CMakeFiles/appmodules.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/CMakeFiles/rebuild_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/ReactNativeFsSpec_autolinked_build/CMakeFiles/react_codegen_ReactNativeFsSpec.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/ReactNativeFsSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/ReactNativeFsSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/RNImagePickerSpec_autolinked_build/CMakeFiles/react_codegen_RNImagePickerSpec.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/RNImagePickerSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/RNImagePickerSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/safeareacontext_autolinked_build/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/RelWithDebInfo/3o6q6e54/arm64-v8a/safeareacontext_autolinked_build/CMakeFiles/rebuild_cache.dir

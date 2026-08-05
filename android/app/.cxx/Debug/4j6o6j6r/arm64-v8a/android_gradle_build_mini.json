@@ -1,0 +1,55 @@
+{
+  "buildFiles": [
+    "/home/gus/Documents/miraapp/miraapp-react/node_modules/@dr.pogodin/react-native-fs/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/home/gus/Documents/miraapp/miraapp-react/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/home/gus/Documents/miraapp/miraapp-react/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
+    "/home/gus/Documents/miraapp/miraapp-react/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/gus/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/Debug/4j6o6j6r/arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/gus/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/gus/Documents/miraapp/miraapp-react/android/app/.cxx/Debug/4j6o6j6r/arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "react_codegen_safeareacontext::@7984cd80db47aa7b952a": {
+      "artifactName": "react_codegen_safeareacontext",
+      "abi": "arm64-v8a",
+      "output": "/home/gus/Documents/miraapp/miraapp-react/android/app/build/intermediates/cxx/Debug/4j6o6j6r/obj/arm64-v8a/libreact_codegen_safeareacontext.so",
+      "runtimeFiles": [
+        "/home/gus/.gradle/caches/9.3.1/transforms/f3bb8c0980a8632bf0fb9e09ca917a5e/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/9f31b5b7d16446b33f88a4da01431520/transformed/react-android-0.86.2-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/9f31b5b7d16446b33f88a4da01431520/transformed/react-android-0.86.2-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so"
+      ]
+    },
+    "react_codegen_ReactNativeFsSpec::@fdad588840c97e8ae25e": {
+      "artifactName": "react_codegen_ReactNativeFsSpec",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    },
+    "react_codegen_RNImagePickerSpec::@f66ee9a2efecfb28bee4": {
+      "artifactName": "react_codegen_RNImagePickerSpec",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    },
+    "appmodules::@6890427a1f51a3e7e1df": {
+      "artifactName": "appmodules",
+      "abi": "arm64-v8a",
+      "output": "/home/gus/Documents/miraapp/miraapp-react/android/app/build/intermediates/cxx/Debug/4j6o6j6r/obj/arm64-v8a/libappmodules.so",
+      "runtimeFiles": [
+        "/home/gus/Documents/miraapp/miraapp-react/android/app/build/intermediates/cxx/Debug/4j6o6j6r/obj/arm64-v8a/libreact_codegen_safeareacontext.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/f3bb8c0980a8632bf0fb9e09ca917a5e/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/9f31b5b7d16446b33f88a4da01431520/transformed/react-android-0.86.2-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/9f31b5b7d16446b33f88a4da01431520/transformed/react-android-0.86.2-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so"
+      ]
+    }
+  }
+}

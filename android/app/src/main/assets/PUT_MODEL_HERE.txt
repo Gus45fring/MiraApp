@@ -1,0 +1,20 @@
+Put your exported model here, named exactly:
+
+    model.onnx
+
+i.e. this file should live at:
+
+    android/app/src/main/assets/model.onnx
+
+Export it from Ultralytics with:
+
+    from ultralytics import YOLO
+    model = YOLO("yolo26n.pt")           # or your custom-trained .pt
+    model.export(format="onnx", imgsz=640)
+
+That produces a model with the default end-to-end (NMS-free) head, output
+shape (1, 300, 6) = [x1, y1, x2, y2, confidence, class_id]. This project's
+postprocessing code (src/ml/postprocess.ts) expects that shape by default.
+
+Delete this .txt file once you've added model.onnx (it's just a placeholder
+so the assets folder isn't empty in git).

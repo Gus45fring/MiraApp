@@ -1,0 +1,19 @@
+diff --git a/node_modules/onnxruntime-react-native/android/build.gradle b/node_modules/onnxruntime-react-native/android/build.gradle
+index 41b4359..cc354ca 100644
+--- a/node_modules/onnxruntime-react-native/android/build.gradle
++++ b/node_modules/onnxruntime-react-native/android/build.gradle
+@@ -247,7 +247,13 @@ dependencies {
+     extractLibs "com.microsoft.onnxruntime:onnxruntime-android:latest.integration@aar"
+   }
+ 
+-  if (VersionNumber.parse(REACT_NATIVE_VERSION) < VersionNumber.parse("0.71")) {
++  // NOTE: patched - org.gradle.util.VersionNumber was removed in Gradle 9.0,
++  // which breaks this check on newer RN templates. Replaced with a plain
++  // Groovy version comparison that doesn't depend on any Gradle util class.
++  def rnVersionParts = REACT_NATIVE_VERSION.toString().split(/[.-]/)
++  def rnMajorVersion = rnVersionParts[0].isInteger() ? rnVersionParts[0].toInteger() : 0
++  def rnMinorVersion = (rnVersionParts.size() > 1 && rnVersionParts[1].isInteger()) ? rnVersionParts[1].toInteger() : 0
++  if (rnMajorVersion == 0 && rnMinorVersion < 71) {
+     extractLibs "com.facebook.fbjni:fbjni:+:headers"
+     extractLibs "com.facebook.fbjni:fbjni:+"
+   }
