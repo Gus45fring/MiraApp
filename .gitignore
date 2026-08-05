@@ -8,6 +8,8 @@ android/build/
 *.apk
 *.aar
 *.so
+*.ink
+
 
 # iOS build outputs
 ios/Pods/
