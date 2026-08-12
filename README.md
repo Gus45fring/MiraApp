@@ -89,3 +89,21 @@ CLASS_LINKS: {
 The key must exactly match a name in `CLASS_NAMES`. A link is opened only when
 the class confidence is greater than 70% with the default setting.
 
+
+## Map waypoints
+
+The map starts centered at `37.325634592258346, 14.442785873423631`.
+To replace the temporary markers, edit `MAP_WAYPOINTS` near the top of `App.tsx`:
+
+```ts
+const MAP_WAYPOINTS: MapWaypoint[] = [
+  {
+    id: 'example',
+    title: 'My waypoint',
+    latitude: 37.3256,
+    longitude: 14.4428,
+  },
+];
+```
+
+The map uses standard OpenStreetMap tiles, so the device needs an internet connection to load the map background.
