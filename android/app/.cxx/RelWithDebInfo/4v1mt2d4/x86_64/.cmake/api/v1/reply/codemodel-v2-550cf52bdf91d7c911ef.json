@@ -1,0 +1,138 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"jsonFile" : "directory-.-RelWithDebInfo-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "ReactNativeFsSpec_autolinked_build",
+					"jsonFile" : "directory-ReactNativeFsSpec_autolinked_build-RelWithDebInfo-a481c40abb5b501f211e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/@dr.pogodin/react-native-fs/android/build/generated/source/codegen/jni",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "safeareacontext_autolinked_build",
+					"jsonFile" : "directory-safeareacontext_autolinked_build-RelWithDebInfo-50ea5e1e3125c195ec01.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/react-native-safe-area-context/android/src/main/jni",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "NitroModulesSpec_autolinked_build",
+					"jsonFile" : "directory-NitroModulesSpec_autolinked_build-RelWithDebInfo-4dd5d3ee857afd8a38a0.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.13"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/react-native-nitro-modules/android/build/generated/source/codegen/jni",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "RelWithDebInfo",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					],
+					"name" : "appmodules",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "appmodules::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-appmodules-RelWithDebInfo-54e1edb27c0e38dd587d.json",
+					"name" : "appmodules",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "react_codegen_NitroModulesSpec::@472a82f9c57d3d3b8644",
+					"jsonFile" : "target-react_codegen_NitroModulesSpec-RelWithDebInfo-4bd3a202d6614c798e94.json",
+					"name" : "react_codegen_NitroModulesSpec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "react_codegen_ReactNativeFsSpec::@fdad588840c97e8ae25e",
+					"jsonFile" : "target-react_codegen_ReactNativeFsSpec-RelWithDebInfo-d6e3cc0549dcb422bef9.json",
+					"name" : "react_codegen_ReactNativeFsSpec",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "react_codegen_safeareacontext::@7984cd80db47aa7b952a",
+					"jsonFile" : "target-react_codegen_safeareacontext-RelWithDebInfo-658a379693021d105ecd.json",
+					"name" : "react_codegen_safeareacontext",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/x86_64",
+		"source" : "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

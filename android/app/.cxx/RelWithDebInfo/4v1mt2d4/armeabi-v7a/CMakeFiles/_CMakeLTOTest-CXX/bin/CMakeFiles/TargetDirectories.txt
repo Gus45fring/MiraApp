@@ -1,0 +1,4 @@
+/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

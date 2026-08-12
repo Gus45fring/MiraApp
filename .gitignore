@@ -1,0 +1,16 @@
+# Node dependencies
+node_modules/
+
+# Android build outputs & native intermediate binaries
+android/app/build/
+android/.gradle/
+android/build/
+*.apk
+*.aar
+*.so
+*.ink
+
+
+# iOS build outputs
+ios/Pods/
+ios/build/

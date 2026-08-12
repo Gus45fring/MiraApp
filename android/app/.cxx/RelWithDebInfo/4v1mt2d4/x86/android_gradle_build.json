@@ -1,0 +1,67 @@
+{
+  "buildFiles": [
+    "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/@dr.pogodin/react-native-fs/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/react-native-nitro-modules/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
+    "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/node_modules/react-native/ReactAndroid/cmake-utils/default-app-setup/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/gus/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/gus/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/.cxx/RelWithDebInfo/4v1mt2d4/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "appmodules::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "appmodules",
+      "output": "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/build/intermediates/cxx/RelWithDebInfo/4v1mt2d4/obj/x86/libappmodules.so",
+      "runtimeFiles": [
+        "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/build/intermediates/cxx/RelWithDebInfo/4v1mt2d4/obj/x86/libreact_codegen_safeareacontext.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/f3bb8c0980a8632bf0fb9e09ca917a5e/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.x86/libfbjni.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/bd11b364dde62d0f8b6daff672ac423b/transformed/react-android-0.86.2-release/prefab/modules/jsi/libs/android.x86/libjsi.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/bd11b364dde62d0f8b6daff672ac423b/transformed/react-android-0.86.2-release/prefab/modules/reactnative/libs/android.x86/libreactnative.so"
+      ]
+    },
+    "react_codegen_NitroModulesSpec::@472a82f9c57d3d3b8644": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "react_codegen_NitroModulesSpec"
+    },
+    "react_codegen_ReactNativeFsSpec::@fdad588840c97e8ae25e": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "react_codegen_ReactNativeFsSpec"
+    },
+    "react_codegen_safeareacontext::@7984cd80db47aa7b952a": {
+      "toolchain": "toolchain",
+      "abi": "x86",
+      "artifactName": "react_codegen_safeareacontext",
+      "output": "/home/gus/Documents/miraapp/miraapp-raw-camera-fix/android/app/build/intermediates/cxx/RelWithDebInfo/4v1mt2d4/obj/x86/libreact_codegen_safeareacontext.so",
+      "runtimeFiles": [
+        "/home/gus/.gradle/caches/9.3.1/transforms/f3bb8c0980a8632bf0fb9e09ca917a5e/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.x86/libfbjni.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/bd11b364dde62d0f8b6daff672ac423b/transformed/react-android-0.86.2-release/prefab/modules/jsi/libs/android.x86/libjsi.so",
+        "/home/gus/.gradle/caches/9.3.1/transforms/bd11b364dde62d0f8b6daff672ac423b/transformed/react-android-0.86.2-release/prefab/modules/reactnative/libs/android.x86/libreactnative.so"
+      ]
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/home/gus/Android/Sdk/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/home/gus/Android/Sdk/ndk/27.1.12297006/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}
