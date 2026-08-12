@@ -1,0 +1,12 @@
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/appmodules.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/ReactNativeFsSpec_autolinked_build/CMakeFiles/react_codegen_ReactNativeFsSpec.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/ReactNativeFsSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/ReactNativeFsSpec_autolinked_build/CMakeFiles/rebuild_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/safeareacontext_autolinked_build/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/safeareacontext_autolinked_build/CMakeFiles/rebuild_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/NitroModulesSpec_autolinked_build/CMakeFiles/react_codegen_NitroModulesSpec.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/NitroModulesSpec_autolinked_build/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/NitroModulesSpec_autolinked_build/CMakeFiles/rebuild_cache.dir

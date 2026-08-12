@@ -1,0 +1,4 @@
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/home/gus/Documents/miraapp/MiraApp-miraapp-react/android/app/.cxx/RelWithDebInfo/12295m41/armeabi-v7a/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

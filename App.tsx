@@ -13,6 +13,7 @@ import {
   Image,
   Linking,
   Modal,
+  PanResponder,
   StatusBar,
   StyleSheet,
   Text,
@@ -35,7 +36,7 @@ import { parseModelOutput, type Detection } from './src/ml/postprocess';
 
 type ModelState = 'loading' | 'ready' | 'error';
 type AnalysisFps = 3 | 6;
-type AppScreen = 'menu' | 'camera';
+type AppScreen = 'menu' | 'camera' | 'map';
 type PipelineStage =
   | 'idle'
   | 'snapshot'
@@ -48,6 +49,16 @@ type PipelineStage =
   | 'error';
 
 type Size = { width: number; height: number };
+
+type MapWaypoint = {
+  id: string;
+  title: string;
+  latitude: number;
+  longitude: number;
+  url: string;
+};
+
+type ProjectedPoint = { x: number; y: number };
 
 type DebugStats = {
   attempted: number;
@@ -71,11 +82,45 @@ type DebugStats = {
 const PREVIEW_FPS = 30;
 const DEFAULT_ANALYSIS_FPS: AnalysisFps = 3;
 const TOP_INSET = StatusBar.currentHeight ?? 0;
-const PREVIEW_ASPECT_RATIO = 9 / 16;
+const PREVIEW_ASPECT_RATIO = 3 / 4;
 const PREVIEW_MARGIN = 12;
 const CONTROLS_RESERVED_HEIGHT = 80;
 const INFO_TEXT =
-  'Sviluppo da Filippo Nisi, modello YOLO26n da Ultralytics e contenuti da Pino Zaccaria e Giuseppe Nisi';
+  'Sviluppato da Filippo Nisi, con modello YOLO26n di Ultralytics e contenuti di Pino Zaccaria e Giuseppe Nisi';
+
+const MAP_CENTER = {
+  latitude: 37.325634592258346,
+  longitude: 14.442785873423631,
+};
+const MAP_TILE_SIZE = 256;
+const MAP_MIN_ZOOM = 13;
+const MAP_MAX_ZOOM = 18;
+const MAP_DEFAULT_ZOOM = 15;
+const MAP_TILE_USER_AGENT = 'MiraAppAI/1.0 (+https://www.miraapp.it)';
+
+const MAP_WAYPOINTS: MapWaypoint[] = [
+  {
+    id: 'chiesa-matrice',
+    title: 'Chiesa Matrice',
+    latitude: 37.32416257403393,
+    longitude: 14.446193933205047,
+    url: 'https://www.miraapp.it/chiesa-matrice',
+  },
+  {
+    id: 'palazzo-biscari',
+    title: 'Palazzo Biscari',
+    latitude: 37.32487925961751,
+    longitude: 14.448191927721844,
+    url: 'https://www.miraapp.it/palazzo-biscari',
+  },
+  {
+    id: 'chiesa-sacro-cuore',
+    title: 'Chiesa Sacro Cuore',
+    latitude: 37.32596114782867,
+    longitude: 14.448269337066405,
+    url: 'https://www.miraapp.it/chiesa-sacro-cuore',
+  },
+];
 
 const INITIAL_STATS: DebugStats = {
   attempted: 0,
@@ -96,7 +141,224 @@ const INITIAL_STATS: DebugStats = {
   frameHeight: 0,
 };
 
+const PIPELINE_STAGE_LABELS: Record<PipelineStage, string> = {
+  idle: 'IN ATTESA',
+  snapshot: 'ACQUISIZIONE',
+  resize: 'RIDIMENSIONAMENTO',
+  raw: 'PIXEL GREZZI',
+  preprocess: 'PREPARAZIONE',
+  inference: 'INFERENZA',
+  postprocess: 'POST-ELABORAZIONE',
+  done: 'COMPLETATO',
+  error: 'ERRORE',
+};
+
 const elapsed = (startedAt: number) => Math.round(performance.now() - startedAt);
+
+function projectMapCoordinate(
+  latitude: number,
+  longitude: number,
+  zoom: number,
+): ProjectedPoint {
+  const clampedLatitude = Math.max(-85.05112878, Math.min(85.05112878, latitude));
+  const latitudeRadians = (clampedLatitude * Math.PI) / 180;
+  const worldSize = MAP_TILE_SIZE * 2 ** zoom;
+  const x = ((longitude + 180) / 360) * worldSize;
+  const y =
+    ((1 -
+      Math.log(
+        Math.tan(latitudeRadians) + 1 / Math.cos(latitudeRadians),
+      ) /
+        Math.PI) /
+      2) *
+    worldSize;
+
+  return { x, y };
+}
+
+type TiledMapProps = {
+  zoom: number;
+  waypoints: MapWaypoint[];
+};
+
+function TiledMap({ zoom, waypoints }: TiledMapProps) {
+  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
+  const [panOffset, setPanOffset] = useState<ProjectedPoint>({ x: 0, y: 0 });
+  const panOffsetRef = useRef<ProjectedPoint>({ x: 0, y: 0 });
+  const dragOrigin = useRef<ProjectedPoint>({ x: 0, y: 0 });
+  const center = projectMapCoordinate(
+    MAP_CENTER.latitude,
+    MAP_CENTER.longitude,
+    zoom,
+  );
+  const effectiveCenter = {
+    x: center.x - panOffset.x,
+    y: center.y - panOffset.y,
+  };
+  const tileCount = 2 ** zoom;
+  const tiles: React.ReactNode[] = [];
+
+  useEffect(() => {
+    const resetOffset = { x: 0, y: 0 };
+    panOffsetRef.current = resetOffset;
+    setPanOffset(resetOffset);
+  }, [zoom]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_event, gesture) =>
+        Math.abs(gesture.dx) > 2 || Math.abs(gesture.dy) > 2,
+      onPanResponderGrant: () => {
+        dragOrigin.current = panOffsetRef.current;
+      },
+      onPanResponderMove: (_event, gesture) => {
+        setPanOffset({
+          x: dragOrigin.current.x + gesture.dx,
+          y: dragOrigin.current.y + gesture.dy,
+        });
+      },
+      onPanResponderRelease: (_event, gesture) => {
+        const nextOffset = {
+          x: dragOrigin.current.x + gesture.dx,
+          y: dragOrigin.current.y + gesture.dy,
+        };
+        panOffsetRef.current = nextOffset;
+        setPanOffset(nextOffset);
+      },
+      onPanResponderTerminate: (_event, gesture) => {
+        const nextOffset = {
+          x: dragOrigin.current.x + gesture.dx,
+          y: dragOrigin.current.y + gesture.dy,
+        };
+        panOffsetRef.current = nextOffset;
+        setPanOffset(nextOffset);
+      },
+    }),
+  ).current;
+
+  if (size.width > 0 && size.height > 0) {
+    const minTileX = Math.floor(
+      (effectiveCenter.x - size.width / 2) / MAP_TILE_SIZE,
+    );
+    const maxTileX = Math.floor(
+      (effectiveCenter.x + size.width / 2) / MAP_TILE_SIZE,
+    );
+    const minTileY = Math.floor(
+      (effectiveCenter.y - size.height / 2) / MAP_TILE_SIZE,
+    );
+    const maxTileY = Math.floor(
+      (effectiveCenter.y + size.height / 2) / MAP_TILE_SIZE,
+    );
+
+    for (let tileX = minTileX; tileX <= maxTileX; tileX += 1) {
+      const wrappedTileX = ((tileX % tileCount) + tileCount) % tileCount;
+      for (let tileY = minTileY; tileY <= maxTileY; tileY += 1) {
+        if (tileY < 0 || tileY >= tileCount) continue;
+        const left =
+          tileX * MAP_TILE_SIZE - effectiveCenter.x + size.width / 2;
+        const top =
+          tileY * MAP_TILE_SIZE - effectiveCenter.y + size.height / 2;
+
+        tiles.push(
+          <Image
+            key={`${zoom}-${tileX}-${tileY}`}
+            source={{
+              uri: `https://tile.openstreetmap.org/${zoom}/${wrappedTileX}/${tileY}.png`,
+              headers: { 'User-Agent': MAP_TILE_USER_AGENT },
+              cache: 'force-cache',
+            }}
+            style={[
+              styles.mapTile,
+              { left, top, width: MAP_TILE_SIZE, height: MAP_TILE_SIZE },
+            ]}
+          />,
+        );
+      }
+    }
+  }
+
+  return (
+    <View
+      style={styles.mapViewport}
+      onLayout={event => {
+        const { width, height } = event.nativeEvent.layout;
+        setSize({ width, height });
+      }}
+      {...panResponder.panHandlers}>
+      {tiles}
+
+      {size.width > 0 &&
+        size.height > 0 &&
+        waypoints.map((waypoint, index) => {
+          const point = projectMapCoordinate(
+            waypoint.latitude,
+            waypoint.longitude,
+            zoom,
+          );
+          const left = point.x - effectiveCenter.x + size.width / 2;
+          const top = point.y - effectiveCenter.y + size.height / 2;
+
+          return (
+            <TouchableOpacity
+              key={waypoint.id}
+              activeOpacity={0.82}
+              accessibilityRole="link"
+              accessibilityLabel={`Apri ${waypoint.title}`}
+              style={[styles.mapMarkerWrap, { left, top }]}
+              onPress={() => {
+                Linking.openURL(waypoint.url).catch(error =>
+                  console.error(`Impossibile aprire ${waypoint.title}`, error),
+                );
+              }}>
+              <View style={styles.mapMarker}>
+                <Text style={styles.mapMarkerNumber}>{index + 1}</Text>
+              </View>
+              <View style={styles.mapMarkerLabel}>
+                <Text numberOfLines={1} style={styles.mapMarkerLabelText}>
+                  {waypoint.title}
+                </Text>
+                <Text style={styles.mapMarkerOpenText}>Apri ›</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+      <View pointerEvents="none" style={styles.mapCenterCrosshair}>
+        <View style={styles.mapCenterCrosshairHorizontal} />
+        <View style={styles.mapCenterCrosshairVertical} />
+      </View>
+
+      <Text style={styles.mapAttribution}>© collaboratori di OpenStreetMap</Text>
+    </View>
+  );
+}
+
+function ScanMenuIcon() {
+  return (
+    <View style={styles.scanIcon}>
+      <View style={[styles.scanCorner, styles.scanCornerTopLeft]} />
+      <View style={[styles.scanCorner, styles.scanCornerTopRight]} />
+      <View style={[styles.scanCorner, styles.scanCornerBottomLeft]} />
+      <View style={[styles.scanCorner, styles.scanCornerBottomRight]} />
+      <View style={[styles.scanDot, { left: 13, top: 13 }]} />
+      <View style={[styles.scanDot, { right: 13, top: 13 }]} />
+      <View style={[styles.scanDot, { left: 13, bottom: 13 }]} />
+      <View style={[styles.scanDotSmall, { right: 11, bottom: 10 }]} />
+      <View style={[styles.scanDotSmall, { right: 17, bottom: 16 }]} />
+    </View>
+  );
+}
+
+function MapMenuIcon() {
+  return (
+    <View style={styles.mapMenuIcon}>
+      <View style={[styles.mapFold, styles.mapFoldLeft]} />
+      <View style={[styles.mapFold, styles.mapFoldMiddle]} />
+      <View style={[styles.mapFold, styles.mapFoldRight]} />
+    </View>
+  );
+}
 
 type InfoModalProps = {
   visible: boolean;
@@ -138,6 +400,7 @@ function App() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const [screen, setScreen] = useState<AppScreen>('menu');
   const [infoVisible, setInfoVisible] = useState(false);
+  const [mapZoom, setMapZoom] = useState(MAP_DEFAULT_ZOOM);
   const [detections, setDetections] = useState<Detection[] | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isStreaming, setIsStreaming] = useState(true);
@@ -163,7 +426,7 @@ function App() {
   const completionTimes = useRef<number[]>([]);
   const openedLinkKey = useRef<string | null>(null);
 
-  // Keep the preview at a portrait 9:16 ratio and fit it inside the available
+  // Keep the preview at a portrait 3:4 ratio and fit it inside the available
   // screen space, leaving room around it and for the controls below.
   const maxPreviewWidth = Math.max(1, windowWidth - PREVIEW_MARGIN * 2);
   const maxPreviewHeight = Math.max(
@@ -187,7 +450,7 @@ function App() {
     getSession()
       .then(() => setModelState('ready'))
       .catch(error => {
-        console.error('Failed to load model', error);
+        console.error('Caricamento del modello non riuscito', error);
         setModelLoadError(String(error?.message ?? error));
         setModelState('error');
       });
@@ -204,7 +467,7 @@ function App() {
     setScreen('camera');
     if (!hasPermission) {
       requestPermission().catch(error => {
-        console.error('Camera permission request failed', error);
+        console.error('Richiesta di autorizzazione della fotocamera non riuscita', error);
       });
     }
   }, [hasPermission, requestPermission]);
@@ -343,7 +606,7 @@ function App() {
           try {
             await Linking.openURL(link);
           } catch (linkError: any) {
-            const linkMessage = `Could not open link for ${
+            const linkMessage = `Impossibile aprire il link per ${
               linkCandidate.className
             }: ${String(linkError?.message ?? linkError)}`;
             console.error(linkMessage, linkError);
@@ -373,7 +636,7 @@ function App() {
       }));
       setStage('done');
     } catch (error: any) {
-      console.error('Live detection failed', error);
+      console.error('Rilevamento in tempo reale non riuscito', error);
       setRuntimeError(String(error?.message ?? error));
       setDebugStats(previous => ({
         ...previous,
@@ -415,7 +678,9 @@ function App() {
   const best = detections?.[0] ?? null;
   const cameraActive =
     screen === 'camera' && isStreaming && appIsActive && hasPermission;
-  const stageLabel = isAnalyzing ? pipelineStage.toUpperCase() : 'IDLE';
+  const stageLabel = isAnalyzing
+    ? PIPELINE_STAGE_LABELS[pipelineStage]
+    : PIPELINE_STAGE_LABELS.idle;
   // VisionCamera fills the view using a center-crop/cover transform. Apply
   // the same transform to model coordinates so debug boxes line up with the
   // visible preview instead of being stretched independently on each axis.
@@ -444,27 +709,146 @@ function App() {
     </>
   );
 
+  const cameraBackControl = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Torna al menu principale"
+      style={styles.cameraBackButton}
+      onPress={() => setScreen('menu')}>
+      <Text style={styles.cameraBackText}>‹</Text>
+    </TouchableOpacity>
+  );
+
+  const resetDebugInfo = useCallback(() => {
+    completionTimes.current = [];
+    setDebugStats(INITIAL_STATS);
+    setLastAnalyzedAt(null);
+    setRuntimeError(null);
+    setPipelineStage('idle');
+  }, []);
+
   if (screen === 'menu') {
     return (
       <View style={styles.menuPage}>
-        <StatusBar barStyle="dark-content" backgroundColor="#f7f2e8" />
-        {infoControls}
+        <StatusBar
+          translucent
+          barStyle="dark-content"
+          backgroundColor="transparent"
+        />
 
-        <View style={styles.menuContent}>
-          <Text style={styles.menuTitle}>MiraApp AI</Text>
+        <View style={styles.menuHero}>
           <Image
-            source={require('./src/assets/miraapp-banner.png')}
-            resizeMode="cover"
-            style={styles.menuBanner}
+            source={require('./src/assets/chiesa-banner.jpg')}
+            resizeMode="contain"
+            style={styles.menuHeroImage}
           />
-          <TouchableOpacity style={styles.startButton} onPress={openMainUi}>
-            <Text style={styles.startButtonText}>Apri MiraApp AI</Text>
+          <View style={styles.menuHeroTitleBackdrop}>
+            <Text style={styles.menuHeroTitle}>MiraApp AI</Text>
+          </View>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Informazioni sull'app"
+            style={styles.menuInfoButton}
+            onPress={() => setInfoVisible(true)}>
+            <Text style={styles.menuInfoText}>i</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.menuFooter}>
-          con il patrocino del comune di mirabella imbaccari
-        </Text>
+        <View style={styles.menuActions}>
+          <TouchableOpacity
+            activeOpacity={0.84}
+            style={styles.menuActionCard}
+            onPress={openMainUi}>
+            <ScanMenuIcon />
+            <Text style={styles.menuActionText}>Scansiona il monumento</Text>
+            <Text style={styles.menuChevron}>›</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.84}
+            style={styles.menuActionCard}
+            onPress={() => setScreen('map')}>
+            <MapMenuIcon />
+            <Text style={styles.menuActionText}>Vedi la mappa</Text>
+            <Text style={styles.menuChevron}>›</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.menuPatronage}>
+          <Text style={styles.menuPatronageText}>
+            Con il patrocinio di Mirabella Imbaccari
+          </Text>
+          <Image
+            source={require('./src/assets/mirabella-imbaccari-stemma.png')}
+            resizeMode="contain"
+            style={styles.menuPatronageLogo}
+          />
+        </View>
+
+        <InfoModal visible={infoVisible} onClose={() => setInfoVisible(false)} />
+      </View>
+    );
+  }
+
+  if (screen === 'map') {
+    return (
+      <View style={styles.mapPage}>
+        <StatusBar barStyle="dark-content" backgroundColor="#f7f2e8" />
+        <View style={styles.mapHeader}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Torna al menu"
+            style={styles.mapBackButton}
+            onPress={() => setScreen('menu')}>
+            <Text style={styles.mapBackText}>‹</Text>
+          </TouchableOpacity>
+          <Text style={styles.mapTitle}>Mappa</Text>
+          <View style={styles.mapHeaderSpacer} />
+        </View>
+
+        <View style={styles.mapBody}>
+          <View style={styles.mapCanvas}>
+            <TiledMap zoom={mapZoom} waypoints={MAP_WAYPOINTS} />
+            <View style={styles.mapZoomControls}>
+              <TouchableOpacity
+                style={styles.mapZoomButton}
+                onPress={() =>
+                  setMapZoom(value => Math.min(MAP_MAX_ZOOM, value + 1))
+                }>
+                <Text style={styles.mapZoomText}>+</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.mapZoomButton}
+                onPress={() =>
+                  setMapZoom(value => Math.max(MAP_MIN_ZOOM, value - 1))
+                }>
+                <Text style={styles.mapZoomText}>−</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.mapPlacesPanel}>
+            {MAP_WAYPOINTS.map((waypoint, index) => (
+              <TouchableOpacity
+                key={waypoint.id}
+                activeOpacity={0.84}
+                accessibilityRole="link"
+                accessibilityLabel={`Apri ${waypoint.title}`}
+                style={styles.mapPlaceButton}
+                onPress={() => {
+                  Linking.openURL(waypoint.url).catch(error =>
+                    console.error(`Impossibile aprire ${waypoint.title}`, error),
+                  );
+                }}>
+                <View style={styles.mapPlaceNumber}>
+                  <Text style={styles.mapPlaceNumberText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.mapPlaceButtonText}>{waypoint.title}</Text>
+                <Text style={styles.mapPlaceChevron}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       </View>
     );
   }
@@ -473,13 +857,15 @@ function App() {
     return (
       <View style={[styles.centeredPage, { paddingTop: TOP_INSET + 24 }]}>
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        {cameraBackControl}
         {infoControls}
         <Text style={styles.title}>MiraApp AI</Text>
         <Text style={styles.message}>
-          Camera access is required for the live preview and frame analysis.
+          È necessario autorizzare l’accesso alla fotocamera per l’anteprima in
+          tempo reale e l’analisi dei fotogrammi.
         </Text>
         <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.buttonText}>Grant camera access</Text>
+          <Text style={styles.buttonText}>Autorizza la fotocamera</Text>
         </TouchableOpacity>
       </View>
     );
@@ -489,9 +875,10 @@ function App() {
     return (
       <View style={[styles.centeredPage, { paddingTop: TOP_INSET + 24 }]}>
         <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        {cameraBackControl}
         {infoControls}
         <ActivityIndicator />
-        <Text style={styles.message}>Looking for a back camera…</Text>
+        <Text style={styles.message}>Ricerca della fotocamera posteriore…</Text>
       </View>
     );
   }
@@ -503,18 +890,20 @@ function App() {
         barStyle="light-content"
         backgroundColor="transparent"
       />
+      {cameraBackControl}
       {infoControls}
 
-      <View
-        style={[
-          styles.cameraContainer,
-          { width: previewWidth, height: previewHeight },
-        ]}
-        onLayout={event => {
-          const { width, height } = event.nativeEvent.layout;
-          setPreviewSize({ width, height });
-        }}>
-        <Camera
+      <View style={styles.cameraStage}>
+        <View
+          style={[
+            styles.cameraContainer,
+            { width: previewWidth, height: previewHeight },
+          ]}
+          onLayout={event => {
+            const { width, height } = event.nativeEvent.layout;
+            setPreviewSize({ width, height });
+          }}>
+          <Camera
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
           device={device}
@@ -529,7 +918,7 @@ function App() {
             setPipelineStage('idle');
           }}
           onError={error => {
-            console.error('Camera error', error);
+            console.error('Errore della fotocamera', error);
             setRuntimeError(error.message);
           }}
         />
@@ -567,9 +956,8 @@ function App() {
         {debugVisible && (
           <View pointerEvents="none" style={styles.topOverlay}>
             <View style={styles.badgeRow}>
-              <Text style={styles.liveBadge}>LIVE · {PREVIEW_FPS} FPS</Text>
               <Text style={styles.feedBadge}>
-                TARGET · {analysisTargetFps} FPS
+                OBIETTIVO · {analysisTargetFps} FPS
               </Text>
               <View
                 style={[
@@ -583,7 +971,7 @@ function App() {
 
             <View style={styles.debugPanel}>
               <View style={styles.debugHeaderRow}>
-                <Text style={styles.debugTitle}>PIPELINE DEBUG</Text>
+                <Text style={styles.debugTitle}>DEBUG DELLA PIPELINE</Text>
                 <Text
                   style={[
                     styles.stageText,
@@ -593,29 +981,29 @@ function App() {
                 </Text>
               </View>
               <Text style={styles.debugText}>
-                Actual {debugStats.actualFps.toFixed(1)} fps · analyzed{' '}
-                {debugStats.analyzed} · dropped {debugStats.skipped} · errors{' '}
+                Effettivi {debugStats.actualFps.toFixed(1)} fps · analizzati{' '}
+                {debugStats.analyzed} · saltati {debugStats.skipped} · errori{' '}
                 {debugStats.errors}
               </Text>
               <Text style={styles.debugText}>
-                snap {debugStats.snapshotMs} ms · resize {debugStats.resizeMs} ms ·
-                raw {debugStats.rawMs} ms
+                scatto {debugStats.snapshotMs} ms · ridim. {debugStats.resizeMs} ms ·
+                grezzi {debugStats.rawMs} ms
               </Text>
               <Text style={styles.debugText}>
-                prep {debugStats.preprocessMs} ms
+                prep. {debugStats.preprocessMs} ms
               </Text>
               <Text style={styles.debugText}>
-                infer {debugStats.inferenceMs} ms · post{' '}
+                inferenza {debugStats.inferenceMs} ms · post{' '}
                 {debugStats.postprocessMs} ms
               </Text>
               <Text style={styles.debugText}>
-                total {debugStats.totalMs} ms · prep+infer{' '}
+                totale {debugStats.totalMs} ms · prep.+inferenza{' '}
                 {debugStats.prepInferMs} ms
               </Text>
               <Text style={styles.debugText}>
-                frame {debugStats.frameWidth || '—'}×
-                {debugStats.frameHeight || '—'} {debugStats.pixelFormat} · input {CONFIG.INPUT_SIZE}×
-                {CONFIG.INPUT_SIZE} · detections {detections?.length ?? 0}
+                fotogramma {debugStats.frameWidth || '—'}×
+                {debugStats.frameHeight || '—'} {debugStats.pixelFormat} · ingresso {CONFIG.INPUT_SIZE}×
+                {CONFIG.INPUT_SIZE} · rilevamenti {detections?.length ?? 0}
               </Text>
             </View>
           </View>
@@ -625,18 +1013,18 @@ function App() {
           {modelState === 'loading' && (
             <View style={styles.statusRow}>
               <ActivityIndicator color="#fff" />
-              <Text style={styles.statusText}>Loading model…</Text>
+              <Text style={styles.statusText}>Caricamento del modello…</Text>
             </View>
           )}
 
           {modelState === 'error' && (
             <Text style={styles.errorText}>
-              Model failed to load: {modelLoadError}
+              Caricamento del modello non riuscito: {modelLoadError}
             </Text>
           )}
 
           {runtimeError && modelState === 'ready' && (
-            <Text style={styles.errorText}>Runtime error: {runtimeError}</Text>
+            <Text style={styles.errorText}>Errore di esecuzione: {runtimeError}</Text>
           )}
 
           {modelState === 'ready' && (
@@ -645,52 +1033,60 @@ function App() {
                 {isAnalyzing && <ActivityIndicator color="#fff" />}
                 <Text style={styles.resultText}>
                   {detections === null
-                    ? 'Waiting for first analyzed frame…'
+                    ? 'In attesa del primo fotogramma analizzato…'
                     : best
                       ? `${best.className} · ${Math.round(best.score * 100)}%`
-                      : 'No object recognized'}
+                      : 'Nessun oggetto riconosciuto'}
                 </Text>
               </View>
               {debugVisible && (
                 <Text style={styles.timestampText}>
                   {lastAnalyzedAt
-                    ? `Last result: ${lastAnalyzedAt.toLocaleTimeString()} · frame #${debugStats.analyzed}`
-                    : `Target cadence: ${analysisTargetFps} frames per second`}
+                    ? `Ultimo risultato: ${lastAnalyzedAt.toLocaleTimeString()} · fotogramma #${debugStats.analyzed}`
+                    : `Frequenza obiettivo: ${analysisTargetFps} fotogrammi al secondo`}
                 </Text>
               )}
             </View>
           )}
         </View>
       </View>
+      </View>
 
       <View style={styles.controls}>
         {debugVisible && (
-          <View style={styles.rateGroup}>
-            {([3, 6] as AnalysisFps[]).map(rate => (
-              <TouchableOpacity
-                key={rate}
-                style={[
-                  styles.rateButton,
-                  analysisTargetFps === rate && styles.rateButtonSelected,
-                ]}
-                onPress={() => setAnalysisTargetFps(rate)}>
-                <Text
+          <>
+            <View style={styles.rateGroup}>
+              {([3, 6] as AnalysisFps[]).map(rate => (
+                <TouchableOpacity
+                  key={rate}
                   style={[
-                    styles.rateButtonText,
-                    analysisTargetFps === rate && styles.rateButtonTextSelected,
-                  ]}>
-                  {rate} FPS
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                    styles.rateButton,
+                    analysisTargetFps === rate && styles.rateButtonSelected,
+                  ]}
+                  onPress={() => setAnalysisTargetFps(rate)}>
+                  <Text
+                    style={[
+                      styles.rateButtonText,
+                      analysisTargetFps === rate && styles.rateButtonTextSelected,
+                    ]}>
+                    {rate} FPS
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={styles.resetDebugButton}
+              onPress={resetDebugInfo}>
+              <Text style={styles.buttonText}>Azzera debug</Text>
+            </TouchableOpacity>
+          </>
         )}
 
         <TouchableOpacity
           style={styles.debugButton}
           onPress={() => setDebugVisible(value => !value)}>
           <Text style={styles.buttonText}>
-            {debugVisible ? 'Hide debug' : 'Show debug'}
+            {debugVisible ? 'Nascondi debug' : 'Mostra debug'}
           </Text>
         </TouchableOpacity>
 
@@ -698,7 +1094,7 @@ function App() {
           style={[styles.button, !isStreaming && styles.resumeButton]}
           onPress={() => setIsStreaming(value => !value)}>
           <Text style={styles.buttonText}>
-            {isStreaming ? 'Pause' : 'Resume'}
+            {isStreaming ? 'Pausa' : 'Riprendi'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -709,54 +1105,411 @@ function App() {
 const styles = StyleSheet.create({
   menuPage: {
     flex: 1,
-    backgroundColor: '#f7f2e8',
-    paddingTop: TOP_INSET + 24,
-    paddingHorizontal: 20,
-    paddingBottom: 22,
-    justifyContent: 'space-between',
+    backgroundColor: '#f4f0e5',
   },
-  menuContent: {
-    flex: 1,
+  menuHero: {
+    width: '100%',
+    aspectRatio: 680 / 453,
+    backgroundColor: '#d8e8ef',
+    position: 'relative',
+  },
+  menuHeroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  menuHeroTitleBackdrop: {
+    position: 'absolute',
+    top: TOP_INSET + 28,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.58)',
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+  },
+  menuHeroTitle: {
+    color: '#111',
+    fontFamily: 'serif',
+    fontSize: 31,
+    fontWeight: '700',
+    textShadowColor: 'rgba(255, 255, 255, 0.18)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  menuInfoButton: {
+    position: 'absolute',
+    top: TOP_INSET + 32,
+    right: 16,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 3,
+    borderColor: '#111',
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuTitle: {
-    color: '#173a35',
-    fontSize: 36,
+  menuInfoText: {
+    color: '#111',
+    fontSize: 27,
+    lineHeight: 29,
+    fontFamily: 'serif',
     fontWeight: '900',
-    letterSpacing: 0.5,
-    marginBottom: 24,
   },
-  menuBanner: {
+  menuActions: {
+    flex: 1,
+    paddingTop: 72,
+    paddingHorizontal: 28,
+    justifyContent: 'flex-start',
+  },
+  menuPatronage: {
     width: '100%',
-    maxWidth: 560,
-    aspectRatio: 1200 / 520,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(23, 58, 53, 0.18)',
-    marginBottom: 30,
-  },
-  startButton: {
-    minWidth: 210,
-    backgroundColor: '#176b5b',
-    paddingHorizontal: 24,
-    paddingVertical: 15,
-    borderRadius: 12,
     alignItems: 'center',
-    elevation: 3,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 4,
+    paddingBottom: 14,
   },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 16,
+  menuPatronageText: {
+    color: '#4e4a42',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  menuPatronageLogo: {
+    width: 46,
+    height: 54,
+  },
+  menuActionCard: {
+    minHeight: 96,
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingHorizontal: 25,
+    marginBottom: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+  },
+  menuActionText: {
+    flex: 1,
+    color: '#171717',
+    fontSize: 21,
+    fontWeight: '700',
+    marginLeft: 24,
+  },
+  menuChevron: {
+    color: '#181818',
+    fontSize: 54,
+    lineHeight: 58,
+    fontWeight: '300',
+    marginLeft: 10,
+    marginTop: -4,
+  },
+  scanIcon: {
+    width: 48,
+    height: 48,
+    position: 'relative',
+  },
+  scanCorner: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderColor: '#214f78',
+  },
+  scanCornerTopLeft: {
+    left: 0,
+    top: 0,
+    borderLeftWidth: 4,
+    borderTopWidth: 4,
+  },
+  scanCornerTopRight: {
+    right: 0,
+    top: 0,
+    borderRightWidth: 4,
+    borderTopWidth: 4,
+  },
+  scanCornerBottomLeft: {
+    left: 0,
+    bottom: 0,
+    borderLeftWidth: 4,
+    borderBottomWidth: 4,
+  },
+  scanCornerBottomRight: {
+    right: 0,
+    bottom: 0,
+    borderRightWidth: 4,
+    borderBottomWidth: 4,
+  },
+  scanDot: {
+    position: 'absolute',
+    width: 9,
+    height: 9,
+    borderWidth: 3,
+    borderColor: '#214f78',
+  },
+  scanDotSmall: {
+    position: 'absolute',
+    width: 5,
+    height: 5,
+    backgroundColor: '#214f78',
+  },
+  mapMenuIcon: {
+    width: 50,
+    height: 45,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapFold: {
+    width: 15,
+    height: 38,
+    borderTopWidth: 4,
+    borderBottomWidth: 4,
+    borderColor: '#214f78',
+  },
+  mapFoldLeft: {
+    borderLeftWidth: 4,
+    transform: [{ skewY: '-10deg' }],
+  },
+  mapFoldMiddle: {
+    borderLeftWidth: 4,
+    transform: [{ skewY: '10deg' }],
+  },
+  mapFoldRight: {
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    transform: [{ skewY: '-10deg' }],
+  },
+  mapPage: {
+    flex: 1,
+    backgroundColor: '#f7f2e8',
+    paddingTop: TOP_INSET,
+  },
+  mapHeader: {
+    height: 58,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f7f2e8',
+  },
+  mapBackButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapBackText: {
+    color: '#172c3f',
+    fontSize: 45,
+    lineHeight: 46,
+    marginTop: -5,
+  },
+  mapTitle: {
+    color: '#171717',
+    fontSize: 24,
     fontWeight: '800',
   },
-  menuFooter: {
-    color: '#52645f',
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: 'center',
-    textTransform: 'none',
-    paddingHorizontal: 28,
+  mapHeaderSpacer: {
+    width: 44,
+    height: 44,
+  },
+  mapBody: {
+    flex: 1,
+    backgroundColor: '#f7f2e8',
+  },
+  mapCanvas: {
+    flex: 1,
+    minHeight: 300,
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#d9e4e7',
+  },
+  mapViewport: {
+    flex: 1,
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#d9e4e7',
+  },
+  mapTile: {
+    position: 'absolute',
+  },
+  mapMarkerWrap: {
+    position: 'absolute',
+    width: 148,
+    marginLeft: -19,
+    marginTop: -38,
+    alignItems: 'flex-start',
+  },
+  mapMarker: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#214f78',
+    borderWidth: 3,
+    borderColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+  },
+  mapMarkerNumber: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  mapMarkerLabel: {
+    maxWidth: 148,
+    marginTop: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    borderRadius: 7,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    elevation: 2,
+  },
+  mapMarkerLabelText: {
+    color: '#172c3f',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  mapMarkerOpenText: {
+    color: '#214f78',
+    fontSize: 9,
+    fontWeight: '900',
+    marginTop: 1,
+  },
+  mapCenterCrosshair: {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    width: 18,
+    height: 18,
+    marginLeft: -9,
+    marginTop: -9,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: '#173a35',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapCenterCrosshairHorizontal: {
+    position: 'absolute',
+    width: 26,
+    height: 2,
+    backgroundColor: '#173a35',
+  },
+  mapCenterCrosshairVertical: {
+    position: 'absolute',
+    width: 2,
+    height: 26,
+    backgroundColor: '#173a35',
+  },
+  mapAttribution: {
+    position: 'absolute',
+    right: 4,
+    bottom: 4,
+    color: '#333',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    fontSize: 9,
+  },
+  mapZoomControls: {
+    position: 'absolute',
+    right: 14,
+    top: 14,
+    borderRadius: 10,
+    overflow: 'hidden',
+    elevation: 5,
+  },
+  mapZoomButton: {
+    width: 46,
+    height: 46,
+    backgroundColor: '#fff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#d7d7d7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapZoomText: {
+    color: '#172c3f',
+    fontSize: 30,
+    lineHeight: 32,
+    fontWeight: '500',
+  },
+  mapPlacesPanel: {
+    backgroundColor: '#f7f2e8',
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 14,
+  },
+  mapPlaceButton: {
+    minHeight: 48,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+  },
+  mapPlaceNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#214f78',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 11,
+  },
+  mapPlaceNumberText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  mapPlaceButtonText: {
+    flex: 1,
+    color: '#172c3f',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  mapPlaceChevron: {
+    color: '#172c3f',
+    fontSize: 32,
+    lineHeight: 34,
+    marginLeft: 8,
+    marginTop: -2,
+  },
+  cameraBackButton: {
+    position: 'absolute',
+    top: TOP_INSET + 12,
+    left: 12,
+    zIndex: 31,
+    elevation: 9,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(20, 47, 43, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraBackText: {
+    color: '#fff',
+    fontSize: 40,
+    lineHeight: 41,
+    fontWeight: '300',
+    marginTop: -4,
   },
   infoButton: {
     position: 'absolute',
@@ -827,6 +1580,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 24,
   },
+  cameraStage: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cameraContainer: {
     backgroundColor: '#000',
     overflow: 'hidden',
@@ -844,15 +1603,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  liveBadge: {
-    color: '#fff',
-    backgroundColor: 'rgba(180, 0, 0, 0.86)',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: 14,
-    fontSize: 11,
-    fontWeight: '800',
-  },
   feedBadge: {
     color: '#fff',
     backgroundColor: 'rgba(0, 0, 0, 0.72)',
@@ -861,7 +1611,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     fontSize: 11,
     fontWeight: '700',
-    marginLeft: 7,
   },
   activityDot: {
     width: 12,
@@ -981,8 +1730,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 9,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
   },
   rateGroup: {
     flexDirection: 'row',
@@ -998,6 +1749,12 @@ const styles = StyleSheet.create({
   rateButtonSelected: { backgroundColor: '#fff' },
   rateButtonText: { color: '#bbb', fontSize: 12, fontWeight: '800' },
   rateButtonTextSelected: { color: '#111' },
+  resetDebugButton: {
+    backgroundColor: '#5b3a2f',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
   debugButton: {
     backgroundColor: '#343434',
     paddingVertical: 10,
