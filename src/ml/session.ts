@@ -33,7 +33,8 @@ export async function getSession(): Promise<InferenceSession> {
 
   const modelPath = await resolveModelPath();
   cachedSession = await InferenceSession.create(modelPath, {
-    executionProviders: ['cpu'],
+    executionProviders: ['xnnpack', 'cpu'],
+    graphOptimizationLevel: 'all',
   });
 
   return cachedSession;
